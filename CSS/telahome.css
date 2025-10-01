@@ -1,0 +1,33 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: rgb(255, 255, 255)
+}
+
+.category-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.category-card:hover {
+  transform: scale(1.05);
+}
+
+.card img {
+  object-fit: cover;
+  
+}
+.c-img{
+    width: 100px;
+  height: 100px;
+}
+.brand-logo {
+  filter: grayscale(100%);       /* deixa em preto e branco */
+  transition: transform 0.3s, filter 0.3s;
+  max-height: 150px;              /* altura máxima para padronizar */
+  object-fit: contain;
+}
+
+.brand-logo:hover {
+  filter: grayscale(0%);         /* volta a cor ao passar o mouse */
+  transform: scale(1.1);         /* efeito de zoom */
+}

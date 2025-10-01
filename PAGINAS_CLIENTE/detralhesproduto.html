@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="../css/style.css"/>
+  
+  </head>
+  <body>
+    <!-- Inicio do Cabeçalho -------------------------- -->
+<header class="header">
+            <div class="logo">
+              <img src="IMG/logomelhor.jpg" alt="bighome"/>   
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="icons">
+                <img src="IMG/chat_11502400 (1).png" alt="Chat">
+                <img src="IMG/carrinho.png" alt="carrinho">
+                <img src="IMG/perfil.png" alt="perfil">
+            </div>
+        </header>
+    
+    
+    <!-- Inicio do Detalhes do Produto -------------------------- -->
+<div class=" container my-5">
+
+  <!-- Caminho de navegação -->
+  <p><a href="#" class="text-decoration-none">Voltar ao início / Pisos / Revestimentos / Equipamentos</a></p>
+
+  <div class="row">
+    <!-- Imagem principal -->
+    <div class="imagem-produto col-md-6">
+      <div class="text-center border p-3 mb-3">
+        <img src="../IMG/265141-4.webp" class="img-fluid" alt="Produto">
+      </div>
+
+      <!-- Miniaturas -->
+      <div class="d-flex justify-content- gap-2">
+        <img src="../IMG/4_18.jfif" class="img-thumbnail" alt="Miniatura">
+        <img src="../IMG/4_18.jfif" class="img-thumbnail" alt="Miniatura">
+        <img src="../IMG/4_18.jfif" class="img-thumbnail" alt="Miniatura">
+        <img src="../IMG/4_18.jfif" class="img-thumbnail" alt="Miniatura">
+      </div>
+    </div>
+
+    <!-- Informações do produto -->
+    <div class="informacoes col-md-6">
+      <h5>Porcelanato Acetinado 100x200cm Caixa 2,00m² Roca Pulpis Intense MT Retificado</h5>
+      
+      
+
+      <h3 class="text-primary fw-bold">R$ 99,90</h3>
+      <p class="small text-muted">Estoque disponível: <span id="estoque">99</span></p>
+
+      <!-- Quantidade + Botão -->
+      <div class="btn-quantidade d-flex align-items-center mb-3">
+        <button class="btn " onclick="alterarQtd(-1)">-</button>
+        <input type="text" id="quantidade" class="form-control text-center mx-2" value="1" style="max-width:70px;">
+        <button class="btn " onclick="alterarQtd(1)">+</button>
+      </div>
+
+      <button class="btn btn-success w-100 mb-3">
+        <i class="bi bi-whatsapp"></i> Dúvidas?
+      </button>
+
+      <!-- Botões Favoritos e Carrinho -->
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn y w-50">
+          <i class="bi bi-heart"></i> Adicionar aos favoritos
+        </button>
+        <button class="btn btn-warning w-50">
+          <i class="bi bi-cart"></i> Adicionar ao carrinho
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Descrição -->
+  <div class=" row mt-5">
+    <div class=" col-md-6">
+      <div class="tela-detalhes p-3 border text-white">
+        <h5>Descrição do produto:</h5>
+        <ul>
+          <li><strong>Porcelanato Acetinado</strong></li>
+          <li>Tamanho: 100x200 cm</li>
+          <li>Espessura: 9,5 mm</li>
+          <li>Área de cobertura: 2,00 m²</li>
+          <li>Junta mínima: 2 mm</li>
+          <li>Peças por caixa: 6</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Avaliações -->
+    <div class=" col-md-6">
+      <div class="avaliacoes p-3 border text-white ">
+        <h5>Avaliações do Produto:</h5>
+        <p>⭐ 5.0 (1000 avaliações)</p>
+        <div class="list-group">
+          <div class="list-group-item"><strong>Maria:</strong> Produto excelente, ficou lindo na minha sala!</div>
+          <div class="list-group-item"><strong>João:</strong> Chegou rápido e em perfeito estado, recomendo!</div>
+          <div class="list-group-item"><strong>Ana:</strong> Ótima qualidade, superou minhas expectativas.</div>
+          <div class="list-group-item"><strong>Carlos:</strong> Fácil de instalar e acabamento impecável.</div>
+          <div class="list-group-item"><strong>Fernanda:</strong> Voltarei a comprar com certeza.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Produtos Relacionados -->
+  <div class="mt-5">
+    <h5>Produtos Relacionados</h5>
+    <div class="d-flex justify-content-start flex-wrap gap-3">
+      <div class="card" style="width: 14rem;">
+        <img src="../IMG/parafusadeira 2.png" class="card-img-top" alt="Produto Relacionado">
+        <div class="card-body text-center">
+          <p class="card-text">Piso 45x45 cm PEI-4 Mármore Creme</p>
+          <h6 class="fw-bold text-primary">R$ 19,90 MT</h6>
+        </div>
+      </div>
+      <div class="card " style="width: 14rem;">
+        <img src="https://via.placeholder.com/200" class="card-img-top" alt="Produto Relacionado">
+        <div class="card-body text-center">
+          <p class="card-text">Piso 45x45 cm PEI-4 Mármore Creme</p>
+          <h6 class="fw-bold text-primary">R$ 19,90 MT</h6>
+        </div>
+      </div>
+      <div class="card" style="width: 14rem;">
+        <img src="https://via.placeholder.com/200" class="card-img-top" alt="Produto Relacionado">
+        <div class="card-body text-center">
+          <p class="card-text">Piso 45x45 cm PEI-4 Mármore Creme</p>
+          <h6 class="fw-bold text-primary">R$ 19,90 MT</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Fim do Detalhes do Produto ---------------------------- -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Função para alterar quantidade
+  function alterarQtd(valor) {
+    let qtd = document.getElementById("quantidade");
+    let novaQtd = parseInt(qtd.value) + valor;
+    if (novaQtd >= 1) {
+      qtd.value = novaQtd;
+    }
+  }
+</script>
+
+<!-- Rodapé -->
+         <footer class="footer">
+            <!-- area do rodapé que ficará os textos do lado esquerdo -->
+            <div class="footer-esquerdo">
+            <p> Desenvolvido por João Vitor Pinheiro Veloso</p>
+        </div>
+
+        <!-- Area Direita com as redes sociais -->
+        <div class="footer-direito">
+            <p->Conheça Nossas Redes Sociais</p->
+             <div class="icons-sociais">
+                <a href="">
+                  <img src="" alt="Instagram">
+                </a>
+                <a href="">
+                <img srcf="" alt="Whatsapp">
+                </a>
+                 <a href="">
+                  <img src="" alt="Facebook">
+                </a>    
+            
+           </div>
+        </footer>
+    
+    
+  </body>
+</html>
