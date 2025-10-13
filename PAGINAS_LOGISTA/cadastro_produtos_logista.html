@@ -64,11 +64,7 @@
 
             <div class="col-12 col-md-6">
               <label for="catLista" class="form-label">Categorias criadas</label>
-              <select id="pCategoria" class="form-select">
-                <option selected>Selecione uma categoria...</option>
-                <option>Revestimentos</option>
-                <option>materias</option>
-                <option>equipamentos</option>
+              <select id="pCategoria" class="form-select">                
               </select>
             </div>
           </form>
@@ -117,38 +113,7 @@
                           <th class="text-end">Ações</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <div class="logo-sample rounded"></div>
-                          </td>
-                          <td>tigre</td>
-                          <td class="text-end">
-                            <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger">Excluir</button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="logo-sample rounded"></div>
-                          </td>
-                          <td>atlas</td>
-                          <td class="text-end">
-                            <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger">Excluir</button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="logo-sample rounded"></div>
-                          </td>
-                          <td>makita</td>
-                          <td class="text-end">
-                            <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger">Excluir</button>
-                          </td>
-                        </tr>
-                      </tbody>
+                      <tbody id="tabelamarcas"></tbody>
                     </table>
                   </div>
                 </div>
@@ -245,6 +210,11 @@
                 <option value="1">Tigre</option>
                 <option value="2">Atlas</option>
                 <option value="3">Makita</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="pMarca" class="form-label">categoria</label>
+              <select name="categoriaprodutos" id="prodCat" class="form-select">
               </select>
             </div>
 
