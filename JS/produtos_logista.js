@@ -20,6 +20,46 @@ function listarcategorias(nomeid){
 }
 
 
+function listarNomeMarcas(nomeid) {
+  (async () => {
+    const sel = document.querySelector(nomeid);
+    try {
+      const r = await fetch("../PHP/cadastro_marcas.php?listar=1");
+
+      if (!r.ok) throw new Error("Falha na conexão com o servidor!");
+
+      // Converte o retorno para JSON
+      const resposta = await r.json();
+
+      // Verifica se o PHP retornou sucesso
+      if (!resposta.ok) throw new Error("Erro ao listar marcas!");
+
+      const marcas = resposta.marcas;
+
+      // Monta as opções
+      let opcoes = "<option value='' disabled selected>Selecione a marca</option>";
+      for (const m of marcas) {
+        opcoes += `<option value="${m.idMarcas}">${m.nome}</option>`;
+      }
+
+      sel.innerHTML = opcoes;
+
+    } catch (e) {
+      console.error("Erro ao listar marcas:", e);
+      sel.innerHTML = "<option disabled>Erro ao carregar marcas</option>";
+    }
+  })();
+}
+
+
+
+
+
+
+
+
+
+
 // função de listar marcas em tabelas
 function listarMarcas(nometabelamarcas){
 // Espera o HTML carregar para só então buscar e preencher a tabela
@@ -85,13 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 
+// Executa quando a página carregar
+document.addEventListener("DOMContentLoaded", listarMarcas);
 
 
 
-listarMarcas("#tabelamarcas");
+
+listarMarcas("#tabelaMarcas");
 listarcategorias("#pCategoria");
-listarcategorias("#prodcat");
-
+listarcategorias("#prodCat");
+listarNomeMarcas("#marcascdd");
 
 
 

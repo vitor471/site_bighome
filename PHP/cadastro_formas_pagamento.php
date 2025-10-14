@@ -2,6 +2,9 @@
 // Conectando este arquivo ao banco de dados
 require_once __DIR__ ."/conexao.php";
 
+
+
+
 // função para capturar os dados passados de uma página a outra
 function redirecWith($url,$params=[]){
 // verifica se os os paramentros não vieram vazios
