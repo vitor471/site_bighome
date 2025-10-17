@@ -41,3 +41,57 @@ function listarBanners(tabelaId) {
       });
   });
 }
+
+function listarcategorias(nomeid){
+(async () => {
+    // selecionando o elemento html da tela de cadastro de produtos
+    const sel = document.querySelector(nomeid);
+    try {
+        // criando a váriavel que guardar os dados vindo do php, que estão no metodo de listar
+        const r = await fetch("../PHP/cadastro_categorias.php?listar=1");
+        // se o retorno do php vier false, significa que não foi possivel listar os dados
+        if (!r.ok) throw new Error("Falha ao listar categorias!");
+        /* se vier dados do php, ele joga as 
+        informações dentro do campo html em formato de texto
+        innerHTML- inserir dados em elementos html
+        */
+        sel.innerHTML = await r.text();
+    } catch (e) {
+        // se dê erro na listagem, aparece Erro ao carregar dentro do campo html
+        sel.innerHTML = "<option disable>Erro ao carregar</option>"
+    }
+})();
+}
+
+// ==================== PRÉVIA DA IMAGEM DO BANNER ====================
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("inputBanner");
+  const preview = document.getElementById("bannerPreview");
+
+  if (!input || !preview) return; // evita erro caso o elemento não exista
+
+  input.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+      preview.innerHTML = '<span class="text-muted">Prévia</span>';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      preview.innerHTML = `
+        <img src="${event.target.result}" 
+             alt="Prévia" 
+             class="img-fluid" 
+             style="width:100%; height:100%; object-fit:cover;">
+      `;
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+
+listarBanners("listbanners");
+listarcategorias("#prodCat");

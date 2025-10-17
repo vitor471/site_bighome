@@ -19,7 +19,13 @@ function redirecWith($url, $params = [])
 if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
     try {
         // Consulta banners
-        $sqlListar = "SELECT idBanners AS id, descricao, link, data_validade, categoriasprodutos_id AS categoria_id, imagem
+        $sqlListar = "SELECT 
+                        idBanners AS id, 
+                        descricao, 
+                        link, 
+                        data_validade, 
+                        categoriasprodutos_id AS categoria_id, 
+                        imagem
                       FROM banners
                       ORDER BY data_validade DESC";
 
@@ -37,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
                     "link" => $item["link"],
                     "data_validade" => $item["data_validade"],
                     "categoria_id" => $item["categoria_id"],
-                    "imagem" => base64_encode($item["imagem"]) // converte imagem para base64
+                    "imagem" => $item["imagem"] ? base64_encode($item["imagem"]) : null
                 ];
             }, $banners);
 
@@ -46,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
             exit;
         }
 
-        // Retorno padrão (HTML <option>) caso necessário
+        // Retorno padrão (HTML <option>)
         header("Content-Type: text/html; charset=utf-8");
         foreach ($banners as $banner) {
             $id = (int)$banner["id"];
@@ -58,7 +64,11 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
     } catch (Throwable $e) {
         if (isset($_GET["format"]) && strtolower($_GET["format"]) === "json") {
             header("Content-Type: application/json; charset=utf-8", true, 500);
-            echo json_encode(["ok" => false, "error" => "Erro ao listar banners", "detail" => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            echo json_encode([
+                "ok" => false,
+                "error" => "Erro ao listar banners",
+                "detail" => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
         } else {
             header("Content-Type: text/html; charset=utf-8", true, 500);
             echo "<option disabled>Erro ao carregar banners</option>";
@@ -70,14 +80,14 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
 // ==================== CADASTRAR BANNER ====================
 try {
     if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-        redirecWith("../paginas_logista/banners.html", ["erro" => "Método inválido"]);
+        redirecWith("../paginas_logista/promocoes_logista.html", ["erro" => "Método inválido"]);
     }
 
     // Lê dados do formulário
     $descricao = $_POST["descricao"] ?? "";
     $link = $_POST["link"] ?? "";
     $data_validade = $_POST["data_validade"] ?? null;
-    $categoria_id = $_POST["categoria_id"] ?? null;
+    $categoriaprodutos_id = $_POST["categoriaprodutos_id"] ?? null;
     $imagem = $_FILES["imagem"]["tmp_name"] ?? null;
 
     $erros_validacao = [];
@@ -91,24 +101,24 @@ try {
 
     // Insere no banco
     $sql = "INSERT INTO banners (descricao, link, data_validade, categoriasprodutos_id, imagem)
-            VALUES (:descricao, :link, :data_validade, :categoria_id, :imagem)";
+            VALUES (:descricao, :link, :data_validade, :categoriaprodutos_id, :imagem)";
     $stmt = $pdo->prepare($sql);
     $inserir = $stmt->execute([
         ":descricao" => $descricao,
         ":link" => $link,
         ":data_validade" => $data_validade,
-        ":categoria_id" => $categoria_id,
+        ":categoriaprodutos_id" => $categoriaprodutos_id,
         ":imagem" => $imagem_blob
     ]);
 
     if ($inserir) {
-        redirecWith("../paginas_logista/banners.html", ["cadastro" => "ok"]);
+        redirecWith("../paginas_logista/promocoes_logista.html", ["cadastro" => "ok"]);
     } else {
-        redirecWith("../paginas_logista/banners.html", ["erro" => "Erro ao cadastrar no banco de dados"]);
+        redirecWith("../paginas_logista/promocoes_logista.html", ["erro" => "Erro ao cadastrar no banco de dados"]);
     }
 
 } catch (\Exception $e) {
-    redirecWith("../paginas_logista/banners.html", ["erro" => "Erro no banco de dados: " . $e->getMessage()]);
+    redirecWith("../paginas_logista/promocoes_logista.html", ["erro" => "Erro no banco de dados: " . $e->getMessage()]);
 }
 
 ?>
