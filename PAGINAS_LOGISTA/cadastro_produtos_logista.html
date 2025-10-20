@@ -211,7 +211,7 @@
             </div>
             <div class="col-md-6">
               <label for="pMarca" class="form-label">categoria</label>
-              <select name="categoriaprodutos" id="prodCat" class="form-select">
+              <select name="categoriaprodutos[]" id="prodCat" class="form-select">
               </select>
             </div>
 
@@ -230,8 +230,8 @@
         <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
           <h5 id="titulo-lista-produtos" class="m-0">Produtos cadastrados</h5>
           <!-- Campo de busca decorativo (sem JS) -->
-          <form class="d-inline-block" role="search" aria-label="Busca na tabela (decorativa)">
-            <input type="search" class="form-control form-control-sm" placeholder="Buscar (decorativo)" disabled>
+          <form action="../PHP/cadastro_produtos.php" method="post" class="d-inline-block" role="search" aria-label="Busca na tabela (decorativa)">
+            <input type="search" name class="form-control form-control-sm" placeholder="Buscar (decorativo)" disabled>
           </form>
         </div>
 
@@ -251,61 +251,8 @@
                 <th scope="col" class="text-end" style="width:160px;">Ações</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- EXEMPLOS ESTÁTICOS (substitua pelos seus dados quando integrar) -->
-              <tr>
-                <td>105</td>
-                <td>
-                  <div class="prod-thumb rounded border"></div>
-                </td>
-                <td>Fone Bluetooth X200</td>
-                <td>TechPro</td>
-                <td><span class="badge text-bg-light me-1">Acessórios</span><span
-                    class="badge text-bg-light">Celulares</span></td>
-                <td class="text-end">25</td>
-                <td class="text-end">R$ 199,90</td>
-                <td class="text-end">R$ 169,90</td>
-                <td>SKU-FTX200</td>
-                <td class="text-end">
-                  <a href="#" class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Editar</a>
-                  <a href="#" class="btn btn-sm btn-outline-danger disabled" aria-disabled="true">Excluir</a>
-                </td>
-              </tr>
-              <tr>
-                <td>104</td>
-                <td>
-                  <div class="prod-thumb rounded border"></div>
-                </td>
-                <td>Ração Premium 10kg</td>
-                <td>atlas</td>
-                <td><span class="badge text-bg-light">Pets</span></td>
-                <td class="text-end">12</td>
-                <td class="text-end">R$ 129,00</td>
-                <td class="text-end">—</td>
-                <td>RAC-10K-001</td>
-                <td class="text-end">
-                  <a href="#" class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Editar</a>
-                  <a href="#" class="btn btn-sm btn-outline-danger disabled" aria-disabled="true">Excluir</a>
-                </td>
-              </tr>
-              <tr>
-                <td>103</td>
-                <td>
-                  <div class="prod-thumb rounded border"></div>
-                </td>
-                <td>Brinquedo Mordedor</td>
-                <td>Mobix</td>
-                <td><span class="badge text-bg-light">Pets</span></td>
-                <td class="text-end">80</td>
-                <td class="text-end">R$ 29,90</td>
-                <td class="text-end">—</td>
-                <td>BRQ-2025</td>
-                <td class="text-end">
-                  <a href="#" class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Editar</a>
-                  <a href="#" class="btn btn-sm btn-outline-danger disabled" aria-disabled="true">Excluir</a>
-                </td>
-              </tr>
-              <!-- /EXEMPLOS -->
+            <tbody id="listprodutos">
+             
             </tbody>
 
           </table>

@@ -3,68 +3,51 @@
 require_once __DIR__ ."/conexao.php";
 
 // função para capturar os dados passados de uma página a outra
-function redirecWith($url,$params=[]){
-// verifica se os os paramentros não vieram vazios
- if(!empty($params)){
-// separar os parametros em espaços diferentes
-$qs= http_build_query($params);
-$sep = (strpos($url,'?') === false) ? '?': '&';
-$url .= $sep . $qs;
-}
-// joga a url para o cabeçalho no navegador
-header("Location:  $url");
-// fecha o script
-exit;
-}
-// códigos de listagem de dados
+// ==================== LISTAGEM DE CATEGORIAS ====================
 if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
+    try {
+        $sql = "SELECT idCategoria_produtos AS id, nome FROM categoria_produtos ORDER BY nome";
+        $stmt = $pdo->query($sql);
+        $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-   try{
-   // comando de listagem de dados
-   $sqllistar ="SELECT idCategoria_produtos AS id, nome FROM 
-   categoria_produtos ORDER BY nome";
+        $formato = isset($_GET["format"]) ? strtolower($_GET["format"]) : "option";
 
-   // Prepara o comando para ser executado
-   $stmtlistar = $pdo->query($sqllistar);   
-   //executa e captura os dados retornados e guarda em $lista
-   $listar = $stmtlistar->fetchAll(PDO::FETCH_ASSOC);
+        if ($formato === "json") {
+            header("Content-Type: application/json; charset=utf-8");
+            echo json_encode([
+                "ok" => true,
+                "categorias" => $categorias
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
 
-   // verificação de formatos
-    $formato = isset($_GET["format"]) ? strtolower($_GET["format"]) : "option";
+        // Retorno padrão HTML
+        header("Content-Type: text/html; charset=utf-8");
+        if ($categorias) {
+            foreach ($categorias as $cat) {
+                $id = (int)$cat["id"];
+                $nome = htmlspecialchars($cat["nome"], ENT_QUOTES, "UTF-8");
+                echo "<option value=\"$id\">$nome</option>\n";
+            }
+        } else {
+            echo "<option disabled>Nenhuma categoria cadastrada</option>\n";
+        }
+        exit;
 
-
-    if ($formato === "json") {
-      header("Content-Type: application/json; charset=utf-8");
-      echo json_encode(["ok" => true, "categorias" => $listar], JSON_UNESCAPED_UNICODE);
-      exit;
+    } catch (Throwable $e) {
+        if ($formato === "json") {
+            header("Content-Type: application/json; charset=utf-8", true, 500);
+            echo json_encode([
+                "ok" => false,
+                "error" => "Erro ao listar categorias",
+                "detail" => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            header("Content-Type: text/html; charset=utf-8", true, 500);
+            echo "<option disabled>Erro ao carregar categorias</option>";
+        }
+        exit;
     }
-
-
-   // RETORNO PADRÃO
-    header('Content-Type: text/html; charset=utf-8');
-    foreach ($listar as $lista) {
-      $id   = (int)$lista["id"];
-      $nome = htmlspecialchars($lista["nome"], ENT_QUOTES, "UTF-8");
-      echo "<option value=\"{$id}\">{$nome}</option>\n";
-    }
-    exit;
-
-
-
-   }catch (Throwable $e) {
-    // Em caso de erro na listagem
-    if (isset($_GET['format']) && strtolower($_GET['format']) === 'json') {
-      header('Content-Type: application/json; charset=utf-8', true, 500);
-      echo json_encode(['ok' => false, 'error' => 'Erro ao listar categorias',
-       'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
-    } else {
-      header('Content-Type: text/html; charset=utf-8', true, 500);
-      echo "<option disabled>Erro ao carregar categorias</option>";
-    }
-    exit;
-  }
-
-
 }
 
 
