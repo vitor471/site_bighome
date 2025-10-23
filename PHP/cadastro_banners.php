@@ -15,19 +15,19 @@ function redirecWith($url, $params = [])
     exit;
 }
 
-// ==================== LISTAR BANNERS ====================
 if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
     try {
-        // Consulta banners
+        // Consulta banners com o nome da categoria
         $sqlListar = "SELECT 
-                        idBanners AS id, 
-                        descricao, 
-                        link, 
-                        data_validade, 
-                        categoriasprodutos_id AS categoria_id, 
-                        imagem
-                      FROM banners
-                      ORDER BY data_validade DESC";
+                        b.idBanners AS id,
+                        b.descricao,
+                        b.link,
+                        b.data_validade,
+                        b.imagem,
+                        c.nome AS categoria_nome
+                      FROM banners b
+                      LEFT JOIN categoria_produtos c ON b.categoriasprodutos_id = c.idCategoria_produtos
+                      ORDER BY b.data_validade DESC";
 
         $stmt = $pdo->query($sqlListar);
         $banners = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
                     "descricao" => $item["descricao"],
                     "link" => $item["link"],
                     "data_validade" => $item["data_validade"],
-                    "categoria_id" => $item["categoria_id"],
+                    "categoria_nome" => $item["categoria_nome"],
                     "imagem" => $item["imagem"] ? base64_encode($item["imagem"]) : null
                 ];
             }, $banners);
@@ -52,12 +52,13 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
             exit;
         }
 
-        // Retorno padrão (HTML <option>)
+        // Retorno padrão (HTML <option>) mostrando o nome da categoria
         header("Content-Type: text/html; charset=utf-8");
         foreach ($banners as $banner) {
             $id = (int)$banner["id"];
             $descricao = htmlspecialchars($banner["descricao"], ENT_QUOTES, "UTF-8");
-            echo "<option value=\"$id\">$descricao</option>\n";
+            $categoria = htmlspecialchars($banner["categoria_nome"] ?? 'Sem categoria', ENT_QUOTES, "UTF-8");
+            echo "<option value=\"$id\">$descricao - $categoria</option>\n";
         }
         exit;
 
@@ -76,6 +77,128 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
         exit;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+/*  ============================ATUALIZAÇÃO=========================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
+  try {
+    $id        = (int)($_POST['id'] ?? 0);
+    $descricao = trim($_POST['descricao'] ?? '');
+    $dataVal   = trim($_POST['data_validade'] ?? '');
+    $link      = trim($_POST['link'] ?? '');
+    $categoriaprodutos_id = $_POST['categoriaprodutos_id'] ?? null;
+    $categoria = ($categoria === '' || $categoria === null) ? null : (int)$categoria;
+
+    if ($id <= 0) {
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'ID inválido para edição.']);
+    }
+
+    // Lê (se houver) nova imagem
+    $imgBlob = read_image_to_blob($_FILES['foto'] ?? null);
+
+    // validações mínimas (iguais ao cadastro)
+    $erros = [];
+    if ($descricao === '') { $erros[] = 'Informe a descrição.'; }
+    elseif (mb_strlen($descricao) > 45) { $erros[] = 'Descrição deve ter no máximo 45 caracteres.'; }
+
+    $dt = DateTime::createFromFormat('Y-m-d', $dataVal);
+    if (!($dt && $dt->format('Y-m-d') === $dataVal)) { $erros[] = 'Data de validade inválida (use YYYY-MM-DD).'; }
+
+    if ($link !== '' && mb_strlen($link) > 45) { $erros[] = 'Link deve ter no máximo 45 caracteres.'; }
+
+    if ($erros) {
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => implode(' ', $erros)]);
+    }
+
+    // Monta UPDATE dinâmico (atualiza imagem só se uma nova foi enviada)
+    $setSql = "descricao = :desc, data_validade = :dt, link = :lnk, CategoriasProdutos_id = :cat";
+    if ($imgBlob !== null) {
+      $setSql = "imagem = :img, " . $setSql;
+    }
+
+    $sql = "UPDATE Banners
+              SET $setSql
+            WHERE idBanners = :id";
+
+    $st = $pdo->prepare($sql);
+
+    if ($imgBlob !== null) {
+      $st->bindValue(':img', $imgBlob, PDO::PARAM_LOB);
+    }
+
+    $st->bindValue(':desc', $descricao, PDO::PARAM_STR);
+    $st->bindValue(':dt',   $dataVal,   PDO::PARAM_STR);
+
+    if ($link === '') {
+      $st->bindValue(':lnk', null, PDO::PARAM_NULL);
+    } else {
+      $st->bindValue(':lnk', $link, PDO::PARAM_STR);
+    }
+
+    if ($categoria === null) {
+      $st->bindValue(':cat', null, PDO::PARAM_NULL);
+    } else {
+      $st->bindValue(':cat', $categoria, PDO::PARAM_INT);
+    }
+
+    $st->bindValue(':id', $id, PDO::PARAM_INT);
+    $st->execute();
+
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['editar_banner' => 'ok']);
+
+  } catch (Throwable $e) {
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'Erro ao editar: ' . $e->getMessage()]);
+  }
+}
+
+
+
+
+
+/*  ============================EXCLUSÃO=========================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'excluir') {
+  try {
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id <= 0) {
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'ID inválido para exclusão.']);
+    }
+
+    $st = $pdo->prepare("DELETE FROM Banners WHERE idBanners = :id");
+    $st->bindValue(':id', $id, PDO::PARAM_INT);
+    $st->execute();
+
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['excluir_banner' => 'ok']);
+
+  } catch (Throwable $e) {
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'Erro ao excluir: ' . $e->getMessage()]);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ==================== CADASTRAR BANNER ====================
 try {

@@ -114,7 +114,24 @@ redirecWith("../paginas/frete_pagamento_logista.html",
       .$e->getMessage()]);
 }
 
+/*  ============================EXCLUSÃO=========================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'excluir') {
+  try {
+    $id = (int)($_POST['id'] ?? 0);
+    if ($id <= 0) {
+      redirect_with('../PAGINAS_LOGISTA/banners_logista.html', ['erro_banner' => 'ID inválido para exclusão.']);
+    }
 
+    $st = $pdo->prepare("DELETE FROM Banners WHERE idBanners = :id");
+    $st->bindValue(':id', $id, PDO::PARAM_INT);
+    $st->execute();
+
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['excluir_banner' => 'ok']);
+
+  } catch (Throwable $e) {
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'Erro ao excluir: ' . $e->getMessage()]);
+  }
+}
 
 
 

@@ -52,6 +52,96 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
 
 
 
+/* ============================ATUALIZAÇÃO DE CATEGORIA=========================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
+    try {
+        $id      = (int)($_POST['id'] ?? 0);
+        $nome    = trim($_POST['nomecategoria'] ?? '');
+        $desconto = (float)($_POST['desconto'] ?? 0);
+
+        if ($id <= 0) {
+            redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+                'erro' => 'ID inválido para edição de categoria.'
+            ]);
+        }
+
+        // validações
+        $erros = [];
+        if ($nome === '') {
+            $erros[] = 'Informe o nome da categoria.';
+        } elseif (mb_strlen($nome) > 50) {
+            $erros[] = 'Nome da categoria deve ter no máximo 50 caracteres.';
+        }
+
+        if ($desconto < 0) {
+            $erros[] = 'O desconto não pode ser negativo.';
+        }
+
+        if ($erros) {
+            redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+                'erro' => implode(' ', $erros)
+            ]);
+        }
+
+        // UPDATE
+        $sql = "UPDATE categoria_produtos
+                SET nome = :nome, desconto = :desconto
+                WHERE idCategoria_produtos = :id";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':nome', $nome, PDO::PARAM_STR);
+        $stmt->bindValue(':desconto', $desconto, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+            'editar_categoria' => 'ok'
+        ]);
+
+    } catch (Throwable $e) {
+        redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+            'erro' => 'Erro ao editar categoria: ' . $e->getMessage()
+        ]);
+    }
+}
+
+
+
+
+/* ============================EXCLUSÃO DE CATEGORIA=========================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'excluir') {
+    try {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+                'erro' => 'ID inválido para exclusão de categoria.'
+            ]);
+        }
+
+        // Opcional: remover vínculos com produtos antes de excluir a categoria
+        $stmtVinc = $pdo->prepare("DELETE FROM categoria_produtos_e_produtos WHERE categoria_produtos_idcategoria_produtos = :id");
+        $stmtVinc->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmtVinc->execute();
+
+        // Exclui a categoria
+        $st = $pdo->prepare("DELETE FROM categoria_produtos WHERE idCategoria_produtos = :id");
+        $st->bindValue(':id', $id, PDO::PARAM_INT);
+        $st->execute();
+
+        redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+            'excluir_categoria' => 'ok'
+        ]);
+
+    } catch (Throwable $e) {
+        redirectWith('../paginas_logista/cadastro_produtos_logista.html', [
+            'erro' => 'Erro ao excluir categoria: ' . $e->getMessage()
+        ]);
+    }
+}
+
+
+
+
 
 
 
