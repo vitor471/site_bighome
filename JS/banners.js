@@ -184,5 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+
+
 listarBanners("listbanners");
 listarcategorias("#prodCat");

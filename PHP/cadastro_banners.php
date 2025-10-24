@@ -82,12 +82,6 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
 
 
 
-
-
-
-
-
-
 /*  ============================ATUALIZAÇÃO=========================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
   try {
@@ -96,7 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
     $dataVal   = trim($_POST['data_validade'] ?? '');
     $link      = trim($_POST['link'] ?? '');
     $categoriaprodutos_id = $_POST['categoriaprodutos_id'] ?? null;
-    $categoria = ($categoria === '' || $categoria === null) ? null : (int)$categoria;
+   $categoria = ($categoriaprodutos_id === '' || $categoriaprodutos_id === null)
+    ? null
+    : (int)$categoriaprodutos_id;
 
     if ($id <= 0) {
       redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'ID inválido para edição.']);

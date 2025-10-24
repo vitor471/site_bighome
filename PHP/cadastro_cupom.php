@@ -48,24 +48,99 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
   }
 }
 
-/*  ============================EXCLUSÃO=========================== */
+
+
+
+
+
+/*  ============================ ATUALIZAÇÃO DE CUPOM ============================ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
+  try {
+    $id          = (int)($_POST['id'] ?? 0);
+    $nome        = trim($_POST['nome'] ?? '');
+    $valor       = trim($_POST['valor'] ?? '');
+    $dataVal     = trim($_POST['data_validade'] ?? '');
+    $quantidade  = (int)($_POST['quantidade'] ?? 0);
+
+    if ($id <= 0) {
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_cupom' => 'ID inválido para edição.']);
+    }
+
+    // ==================== VALIDAÇÕES ====================
+    $erros = [];
+
+    if ($nome === '') {
+      $erros[] = 'Informe o nome do cupom.';
+    } elseif (mb_strlen($nome) > 50) {
+      $erros[] = 'O nome do cupom deve ter no máximo 50 caracteres.';
+    }
+
+    if ($valor === '' || !is_numeric($valor) || $valor <= 0) {
+      $erros[] = 'Informe um valor válido para o cupom.';
+    }
+
+    $dt = DateTime::createFromFormat('Y-m-d', $dataVal);
+    if (!($dt && $dt->format('Y-m-d') === $dataVal)) {
+      $erros[] = 'Data de validade inválida (use o formato YYYY-MM-DD).';
+    }
+
+    if ($quantidade <= 0) {
+      $erros[] = 'Informe uma quantidade válida (maior que zero).';
+    }
+
+    if ($erros) {
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_cupom' => implode(' ', $erros)]);
+    }
+
+    // ==================== ATUALIZAÇÃO NO BANCO ====================
+    $sql = "UPDATE cupom
+            SET nome = :nome,
+                valor = :valor,
+                data_validade = :dataVal,
+                quantidade = :quantidade
+            WHERE idCupom = :id";
+
+    $st = $pdo->prepare($sql);
+    $st->bindValue(':nome', $nome, PDO::PARAM_STR);
+    $st->bindValue(':valor', $valor, PDO::PARAM_STR);
+    $st->bindValue(':dataVal', $dataVal, PDO::PARAM_STR);
+    $st->bindValue(':quantidade', $quantidade, PDO::PARAM_INT);
+    $st->bindValue(':id', $id, PDO::PARAM_INT);
+
+    $st->execute();
+
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['editar_cupom' => 'ok']);
+
+  } catch (Throwable $e) {
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', [
+      'erro_cupom' => 'Erro ao editar: ' . $e->getMessage()
+    ]);
+  }
+}
+
+
+/*  ============================ EXCLUSÃO DE CUPOM ============================ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'excluir') {
   try {
     $id = (int)($_POST['id'] ?? 0);
+
     if ($id <= 0) {
-      redirect_with('../PAGINAS_LOGISTA/banners_logista.html', ['erro_banner' => 'ID inválido para exclusão.']);
+      redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_cupom' => 'ID inválido para exclusão.']);
     }
 
-    $st = $pdo->prepare("DELETE FROM Banners WHERE idBanners = :id");
+    $st = $pdo->prepare("DELETE FROM cupom WHERE idCupom = :id");
     $st->bindValue(':id', $id, PDO::PARAM_INT);
     $st->execute();
 
-    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['excluir_banner' => 'ok']);
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['excluir_cupom' => 'ok']);
 
   } catch (Throwable $e) {
-    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', ['erro_banner' => 'Erro ao excluir: ' . $e->getMessage()]);
+    redirect_with('../PAGINAS_LOGISTA/promocoes_logista.html', [
+      'erro_cupom' => 'Erro ao excluir: ' . $e->getMessage()
+    ]);
   }
 }
+
 
 
 
