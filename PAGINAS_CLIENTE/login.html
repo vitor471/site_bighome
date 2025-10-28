@@ -15,15 +15,15 @@
       <!-- Coluna 1 (75%) -->
       <div class="col-9 d-flex justify-content-start align-items-center bg-light">
         <div class="w-100 d-flex justify-content-center">
-        <form class="login-card shadow-sm p-4 rounded-3">
+        <form id="form-login" class="login-card shadow-sm p-4 rounded-3">
             <h2 class="fs-5 fw-semibold mb-3 text-uppercase">
               cpf:
             </h2>
-            <input type="text" class="form-control mb-3" placeholder="Digite seu CPF" required/>
+            <input name="cpf"  id="cpf" type="text" class="form-control mb-3" placeholder="Digite seu CPF" required/>
             <h2 class="fs-5 fw-semibold mb-3 text-uppercase">
               senha:
             </h2>
-            <input type="password" class="form-control mb-3" placeholder="Digite sua senha" required/>
+            <input name="senha" id="senha" type="password" class="form-control mb-3" placeholder="Digite sua senha" required/>
             <button type="submit" class="botao-login btn btn-primary w-100 mt-3">Entrar</button>
             <a href="#" class="d-block text-center mt-3 text-decoration-none text-dark">Esqueci minha senha</a>
         
@@ -44,7 +44,7 @@
 
 
 
-
+<script src="../JS/login.js"></script>
 
   </body>
 </html>
