@@ -2,6 +2,21 @@
 // Conectando este arquivo ao banco de dados
 require_once __DIR__ ."/conexao.php";
 
+
+
+function redirectWith(string $url, array $params = []): void {
+  if (!empty($params)) {
+    $qs = http_build_query($params);
+    $url .= (strpos($url, '?') === false ? '?' : '&') . $qs;
+  }
+  header("Location: $url");
+  exit;
+}
+
+
+
+
+
 // função para capturar os dados passados de uma página a outra
 // ==================== LISTAGEM DE CATEGORIAS ====================
 if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET["listar"])) {
@@ -175,16 +190,16 @@ try{
      ]);
      /* Verificando se foi cadastrado no banco de dados */
      if($inserir){
-        redirecWith("../paginas_logista/cadastro_produtos_logista.html",
+        redirectWith("../paginas_logista/cadastro_produtos_logista.html",
         ["cadastro" => "ok"]) ;
      }else{
-        redirecWith("../paginas_logista/cadastro_produtos_logista.html",["erro" 
+        redirectWith("../paginas_logista/cadastro_produtos_logista.html",["erro" 
         =>"Erro ao cadastrar no banco de dados"]);
      }
 
 
 }catch(Exception $e){
- redirecWith("../paginas_logista/cadastro_produtos_logista.html",
+ redirectWith("../paginas_logista/cadastro_produtos_logista.html",
       ["erro" => "Erro no banco de dados: "
       .$e->getMessage()]);
 }

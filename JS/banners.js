@@ -1,108 +1,235 @@
-// ==================== LISTAR BANNERS ====================
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.querySelector('input[name="foto"]');
+  const previewBox = document.querySelector(".banner-thumb");
+  if (!input || !previewBox) return;
+
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+
+    if (!file) {
+      previewBox.innerHTML = '<span class="text-muted">Prévia</span>';
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      previewBox.innerHTML = '<span class="text-danger small">Arquivo inválido</span>';
+      input.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewBox.innerHTML = `<img src="${e.target.result}" alt="Prévia do banner">`;
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+
+/* ========= LISTAR CATEGORIAS ========= */
+function listarcategorias(nomeid) {
+  (async () => {
+    const sel = document.querySelector(nomeid);
+    if (!sel) return;
+
+    try {
+      const r = await fetch("../PHP/cadastro_categorias.php?listar=1");
+      if (!r.ok) throw new Error("Falha ao listar categorias!");
+      sel.innerHTML = await r.text();
+    } catch (e) {
+      sel.innerHTML = "<option disabled>Erro ao carregar</option>";
+    }
+  })();
+}
+
+
+
+
+
+
+function listarCupons(tbcupom) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.getElementById(tbcupom);
+    const url   = '../PHP/cadastro_cupom.php?listar=1';
+
+    // Escapa texto (evita injeção de HTML)
+    const esc = s => (s || '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+
+    // Converte data YYYY-MM-DD → DD/MM/YYYY
+    const dtbr = iso => {
+      if (!iso) return '-';
+      const [y,m,d] = String(iso).split('-');
+      return (y && m && d) ? `${d}/${m}/${y}` : '-';
+    };
+
+    // Monta a <tr> de cada cupom
+    const row = c => `
+      <tr>
+        <td>${c.id}</td>
+        <td>${esc(c.nome)}</td>
+        <td>R$ ${parseFloat(c.valor).toFixed(2).replace('.', ',')}</td>
+        <td>${dtbr(c.data_validade)}</td>
+        <td>${c.quantidade}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-warning" data-id="${c.id}">Editar</button>
+          <button class="btn btn-sm btn-danger"  data-id="${c.id}">Excluir</button>
+        </td>
+      </tr>`;
+
+    // Busca os dados e preenche a tabela
+    fetch(url, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (!d.ok) throw new Error(d.error || 'Erro ao listar cupons');
+        const arr = d.cupons || [];
+        tbody.innerHTML = arr.length
+          ? arr.map(row).join('')
+          : `<tr><td colspan="6" class="text-center text-muted">Nenhum cupom cadastrado.</td></tr>`;
+      })
+      .catch(err => {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Falha ao carregar: ${esc(err.message)}</td></tr>`;
+      });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========= LISTAR BANNERS ========= */
 const byId = new Map();
 
-function listarBanners(tabelaId) {
-  const tbody = document.getElementById(tabelaId);
+function listarBanners(tbbanner) {
+  const tbody = document.getElementById(tbbanner);
   if (!tbody) return;
 
-  const url = '../PHP/cadastro_banners.php?listar=1&format=json';
+  const url = "../PHP/banners.php?listar=1";
+  byId.clear();
 
-  const esc = s => (s || '').replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
 
-  const row = b => `
-    <tr>
-      <td><img src="data:image/png;base64,${b.imagem || ''}" class="mini-banner rounded" style="width:100px; height:50px; object-fit:cover;"></td>
-      <td>${esc(b.descricao || '-')}</td>
-      <td>${esc(b.link || '-')}</td>
-      <td>${esc(b.categoria_nome || '—')}</td>
-      <td>${b.data_validade ? new Date(b.data_validade).toLocaleDateString('pt-BR') : '-'}</td>
-      <td class="text-end">
-        <div class="btn-group btn-group-sm">
+  const ph = () => 'data:image/svg+xml;base64,' + btoa(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="64">
+       <rect width="100%" height="100%" fill="#eee"/>
+       <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+             font-family="sans-serif" font-size="12" fill="#999">SEM IMAGEM</text>
+     </svg>`
+  );
+
+  const dtbr = iso => {
+    if (!iso) return '-';
+    const [y,m,d] = String(iso).split('-');
+    return (y && m && d) ? `${d}/${m}/${y}` : '-';
+  };
+
+  const row = b => {
+    const src  = b.imagem ? `data:image/*;base64,${b.imagem}` : ph();
+    const cat  = b.categoria_nome || '-';
+    const link = b.link ? `<a href="${esc(b.link)}" target="_blank" rel="noopener">abrir</a>` : '-';
+
+    byId.set(String(b.id), b);
+
+    return `
+      <tr>
+        <td><img src="${src}" alt="banner"
+                 style="width:96px;height:64px;object-fit:cover;border-radius:6px"></td>
+        <td>${esc(b.descricao || '-')}</td>
+        <td class="text-nowrap">${dtbr(b.data_validade)}</td>
+        <td>${esc(cat)}</td>
+        <td>${link}</td>
+        <td class="text-end">
           <button class="btn btn-sm btn-warning btn-edit" data-id="${b.id}">Selecionar</button>
-        </div>
-      </td>
-    </tr>
-  `;
+        </td>
+      </tr>`;
+  };
 
   fetch(url, { cache: 'no-store' })
     .then(r => r.json())
     .then(d => {
       if (!d.ok) throw new Error(d.error || 'Erro ao listar banners');
-      const banners = d.banners || [];
-      tbody.innerHTML = banners.length
-        ? banners.map(row).join('')
+      const arr = d.banners || [];
+      tbody.innerHTML = arr.length
+        ? arr.map(row).join('')
         : `<tr><td colspan="6" class="text-center text-muted">Nenhum banner cadastrado.</td></tr>`;
-
-      byId.clear();
-      banners.forEach(b => byId.set(String(b.id), b));
     })
     .catch(err => {
       tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Falha ao carregar: ${esc(err.message)}</td></tr>`;
     });
 
   tbody.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('button.btn-edit');
+    const btn = ev.target.closest('button');
     if (!btn) return;
-    const id = btn.getAttribute('data-id');
-    const banner = byId.get(String(id));
-    if (!banner) return alert('Não foi possível localizar os dados deste banner.');
-    preencherFormBanner(banner);
-  });
-}
 
-// ==================== LISTAR CATEGORIAS ====================
-async function listarcategorias(selector) {
-  const sel = document.querySelector(selector);
-  if (!sel) return;
-  try {
-    const r = await fetch("../PHP/cadastro_categorias.php?listar=1");
-    if (!r.ok) throw new Error("Falha ao listar categorias!");
-    sel.innerHTML = await r.text();
-  } catch (e) {
-    sel.innerHTML = "<option disabled>Erro ao carregar</option>";
-  }
-}
-
-// ==================== PRÉVIA DA IMAGEM ====================
-function initPreview(inputId, previewId) {
-  const input = document.getElementById(inputId);
-  const preview = document.getElementById(previewId);
-  if (!input || !preview) return;
-
-  input.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) {
-      preview.innerHTML = '<span class="text-muted">Prévia</span>';
-      return;
+    if (btn.classList.contains('btn-edit')) {
+      const id = btn.getAttribute('data-id');
+      const banner = byId.get(String(id));
+      if (!banner) {
+        alert('Não foi possível localizar os dados deste banner.');
+        return;
+      }
+      preencherFormBanner(banner);
     }
-    const reader = new FileReader();
-    reader.onload = ev => {
-      preview.innerHTML = `<img src="${ev.target.result}" alt="Prévia" class="img-fluid" style="width:100%; height:100%; object-fit:cover;">`;
-    };
-    reader.readAsDataURL(file);
   });
 }
 
-// ==================== PREENCHER FORMULÁRIO ====================
+/* ========= PRÉVIA ========= */
+function setPreview(src) {
+  const previewBox =
+    document.getElementById('previewBanner') ||
+    document.querySelector('.banner-thumb');
+  if (!previewBox) return;
+
+  const ph = () =>
+    'data:image/svg+xml;base64,' + btoa(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160">
+         <rect width="100%" height="100%" fill="#f2f2f2"/>
+         <text x="50%" y="50%" font-size="14" fill="#999"
+               text-anchor="middle" dominant-baseline="middle">Prévia</text>
+       </svg>`
+    );
+
+  previewBox.innerHTML = '';
+  const img = document.createElement('img');
+  img.src = src || ph();
+  img.alt = 'Prévia do banner';
+  img.className = 'img-fluid';
+  img.style.maxHeight = '160px';
+  img.style.objectFit  = 'contain';
+  previewBox.appendChild(img);
+}
+
+/* ========= PREENCHER FORMULÁRIO ========= */
 function preencherFormBanner(banner) {
-  const form = document.getElementById('formBanner');
-  if (!form) return;
+  const form      = document.getElementById('formBanner') || document.querySelector('form');
+  const acaoInput = document.getElementById('acao')      || form.querySelector('input[name="acao"]');
+  const idInput   = document.getElementById('idBanner')  || form.querySelector('input[name="id"]');
 
   form.querySelector('input[name="descricao"]').value = banner.descricao || '';
-  form.querySelector('input[name="data_validade"]').value = banner.data_validade || '';
-  form.querySelector('input[name="link"]').value = banner.link || '';
+  form.querySelector('input[name="data"]').value      = banner.data_validade || '';
+  form.querySelector('input[name="link"]').value      = banner.link || '';
 
-  const sel = form.querySelector('select[name="categoriaprodutos_id"]');
-  if (sel) sel.value = banner.categoria_id || '';
+  const sel = form.querySelector('select[name="categoriab"]');
+  if (sel) sel.value = (banner.categoria_id ?? '') + '';
 
-  form.querySelector('input[name="id"]').value = banner.id;
-  form.querySelector('input[name="acao"]').value = 'atualizar';
+  idInput.value   = banner.id;
+  acaoInput.value = 'atualizar';
 
-  const file = form.querySelector('input[name="imagem"]');
+  const file = form.querySelector('input[name="foto"]');
   if (file) file.value = '';
 
-  const previewBox = document.getElementById('previewBanner');
-  if (previewBox) previewBox.innerHTML = banner.imagem ? `<img src="data:image/*;base64,${banner.imagem}" class="img-fluid" style="width:100%; height:100%; object-fit:cover;">` : '<span class="text-muted">Prévia</span>';
+  setPreview(banner.imagem ? `data:image/*;base64,${banner.imagem}` : null);
 
   const btnCadastrar = document.getElementById('btnCadastrar');
   if (btnCadastrar) {
@@ -114,49 +241,86 @@ function preencherFormBanner(banner) {
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ==================== INICIALIZAÇÃO ====================
+/* ========= BOTÃO EDITAR ========= */
 document.addEventListener('DOMContentLoaded', () => {
-  listarBanners('listbanners');
-  listarcategorias('select[name="categoriaprodutos_id"]');
-  initPreview('inputBanner', 'previewBanner');
+  const form      = document.getElementById('formBanner') || document.querySelector('form');
+  const btnEditar = document.getElementById('btnEditar');
+  const acaoInput = document.getElementById('acao')      || form.querySelector('input[name="acao"]');
+  const idInput   = document.getElementById('idBanner')  || form.querySelector('input[name="id"]');
 
-  const form = document.getElementById('formBanner');
-  const btnExcluir = document.getElementById('btnExcluir');
+  if (!form || !btnEditar) return;
 
-  if (btnExcluir && form) {
-    btnExcluir.addEventListener('click', async () => {
-      const idInput = form.querySelector('input[name="id"]');
-      const acaoInput = form.querySelector('input[name="acao"]');
-      const previewBox = document.getElementById('previewBanner');
-      const id = idInput.value;
-      if (!id) return alert('Selecione um banner primeiro.');
-      if (!confirm('Deseja realmente excluir este banner?')) return;
+  btnEditar.addEventListener('click', () => {
+    if (!idInput.value) {
+      alert('Clique em "Selecionar" na tabela para carregar um banner primeiro.');
+      return;
+    }
+    acaoInput.value = 'atualizar';
+    form.submit();
+  });
+});
 
-      try {
-        const fd = new FormData();
-        fd.append('acao', 'excluir');
-        fd.append('id', id);
+/* ========= BOTÃO EXCLUIR ========= */
+document.addEventListener('DOMContentLoaded', () => {
+  const form        = document.getElementById('formBanner') || document.querySelector('form');
+  const btnExcluir  = document.getElementById('btnExcluir');
+  const idInput     = document.getElementById('idBanner')  || form.querySelector('input[name="id"]');
+  const previewBox  = document.getElementById('previewBanner') || document.querySelector('.banner-thumb');
+  const btnCadastrar = document.getElementById('btnCadastrar');
+  const acaoInput   = document.getElementById('acao') || form.querySelector('input[name="acao"]');
 
-        const r = await fetch('../php/cadastro_banners.php', { method:'POST', body: fd });
-        if (!r.ok) throw new Error('Falha na exclusão.');
+  if (!form || !btnExcluir) return;
 
-        alert('Banner excluído com sucesso!');
-        form.reset();
-        idInput.value = '';
-        acaoInput.value = '';
-        if (previewBox) previewBox.innerHTML = '<span class="text-muted">Prévia</span>';
+  btnExcluir.addEventListener('click', async () => {
+    const id = idInput.value;
+    if (!id) {
+      alert('Selecione um banner na tabela para excluir.');
+      return;
+    }
 
-        const btnCadastrar = document.getElementById('btnCadastrar');
-        if (btnCadastrar) {
-          btnCadastrar.textContent = 'Cadastrar';
-          btnCadastrar.classList.remove('btn-success');
-          btnCadastrar.classList.add('btn-primary');
-        }
+    if (!confirm('Tem certeza que deseja excluir este banner?')) return;
 
-        listarBanners('listbanners');
-      } catch (e) {
-        alert('Erro ao excluir: ' + (e.message || e));
+    try {
+      const fd = new FormData();
+      fd.append('acao', 'excluir');
+      fd.append('id', id);
+
+      const r = await fetch('../PHP/banners.php', {
+        method: 'POST',
+        body: fd
+      });
+
+      if (!r.ok) throw new Error('Falha na exclusão.');
+
+      alert('Banner excluído com sucesso!');
+
+      form.reset();
+      idInput.value = '';
+      acaoInput.value = '';
+      if (previewBox) previewBox.innerHTML = '<span class="text-muted">Prévia</span>';
+
+      if (btnCadastrar) {
+        btnCadastrar.textContent = 'Cadastrar';
+        btnCadastrar.classList.remove('btn-success');
+        btnCadastrar.classList.add('btn-primary');
       }
-    });
-  }
+
+      listarBanners('tbBanners');
+    } catch (e) {
+      alert('Erro ao excluir: ' + (e.message || e));
+    }
+  });
+});
+
+
+
+
+
+
+/* ========= INICIALIZA ========= */
+document.addEventListener('DOMContentLoaded', () => {
+  listarBanners('tbBanners');
+  listarcategorias("#categoriaBanner");
+  listarcategorias("#categoriasPromocoes");
+  listarCupons('listcupom')
 });
