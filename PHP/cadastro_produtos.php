@@ -16,7 +16,73 @@ function readImageToBlob(?array $file): ?string {
     return $content === false ? null : $content;
 }
 
-// ---------------- FLUXO GET (LISTAGEM) ----------------
+function json_err($msg, $code = 400) {
+    http_response_code($code);
+    echo json_encode(['ok' => false, 'error' => $msg], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function json_ok($data = []) {
+    echo json_encode(['ok' => true] + $data, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// ===================== LISTAR POR CATEGORIA ===================== //
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['listar_por_categoria'])) {
+    $catId = (int)($_GET['idCategoria'] ?? $_GET['idcategoria'] ?? $_GET['categoria_id'] ?? 0);
+    if ($catId <= 0) json_err('idCategoria inválido');
+
+    try {
+        $sql = "SELECT
+                  p.idProdutos, p.nome, p.descricao, p.quantidade, p.preco, p.preco_promocional,
+                  m.nome AS marca,
+                  c.nome AS categoria,
+                  MIN(i.idImagem_produtos) AS id_img,
+                  (SELECT i2.foto FROM Imagem_produtos i2
+                     JOIN imagens_produtos_e_produtos pi2 ON pi2.imagens_produtos_idimagem_produtos=i2.idImagem_produtos
+                    WHERE pi2.produtos_idprodutos=p.idProdutos
+                    ORDER BY i2.idImagem_produtos ASC LIMIT 1) AS imagem,
+                  (SELECT i2.texto_alternativo FROM Imagem_produtos i2
+                     JOIN imagens_produtos_e_produtos pi2 ON pi2.imagens_produtos_idimagem_produtos=i2.idImagem_produtos
+                    WHERE pi2.produtos_idprodutos=p.idProdutos
+                    ORDER BY i2.idImagem_produtos ASC LIMIT 1) AS texto_alternativo
+                FROM Produtos p
+                LEFT JOIN Marcas m ON m.idMarcas = p.Marcas_idMarcas
+                INNER JOIN Produtos_e_Categorias_produtos pc ON pc.Produtos_idProdutos = p.idProdutos
+                INNER JOIN categorias_produtos c ON c.idCategoriaProduto = pc.Categorias_produtos_id
+                LEFT JOIN imagens_produtos_e_produtos pi ON pi.produtos_idprodutos = p.idProdutos
+                LEFT JOIN Imagem_produtos i ON i.idImagem_produtos = pi.imagens_produtos_idimagem_produtos
+                WHERE pc.Categorias_produtos_id = :catId
+                GROUP BY p.idProdutos
+                ORDER BY p.idProdutos DESC";
+
+        $st = $pdo->prepare($sql);
+        $st->bindValue(':catId', $catId, PDO::PARAM_INT);
+        $st->execute();
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        $produtos = array_map(function ($r) {
+            return [
+                'idProdutos'        => (int)$r['idProdutos'],
+                'nome'              => $r['nome'],
+                'descricao'         => $r['descricao'],
+                'quantidade'        => (int)$r['quantidade'],
+                'preco'             => (float)$r['preco'],
+                'preco_promocional' => isset($r['preco_promocional']) ? (float)$r['preco_promocional'] : null,
+                'marca'             => $r['marca'] ?? null,
+                'categoria'         => $r['categoria'] ?? null,
+                'imagem'            => $r['imagem'] ? base64_encode($r['imagem']) : null,
+                'texto_alternativo' => $r['texto_alternativo'] ?? null
+            ];
+        }, $rows);
+
+        json_ok(['count' => count($produtos), 'produtos' => $produtos]);
+    } catch (Throwable $e) {
+        json_err('Falha ao listar produtos por categoria', 500);
+    }
+}
+
+// ---------------- FLUXO GET (LISTAGEM GERAL) ----------------
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     header('Content-Type: application/json; charset=utf-8');
 
@@ -69,9 +135,9 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     }
 }
 
+// ---------------- FLUXO POST (CADASTRAR PRODUTO) ----------------
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
-        // Captura dados do formulário
         $nome = trim($_POST["nome"] ?? "");
         $descricao = trim($_POST["descricao"] ?? "");
         $quantidade = (int)($_POST["quantidade"] ?? 0);
@@ -79,17 +145,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $tamanho = trim($_POST["tamanho"] ?? "");
         $codigo = trim($_POST["codigo"] ?? "");
         $preco_promocional = (float)($_POST["preco_promocional"] ?? 0);
-
-        // Marca e categorias
         $marcas_idmarcas = (int)($_POST["marcas_idmarcas"] ?? 1);
-        $categorias = $_POST["categoriaprodutos"] ?? []; // array de ids
+        $categorias = $_POST["categoriaprodutos"] ?? [];
 
         // Imagens
         $img1 = readImageToBlob($_FILES["imgproduto1"] ?? null);
         $img2 = readImageToBlob($_FILES["imgproduto2"] ?? null);
         $img3 = readImageToBlob($_FILES["imgproduto3"] ?? null);
 
-        // Transação
         $pdo->beginTransaction();
 
         // Inserir produto
@@ -110,23 +173,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         // Vincular categorias
         if (!empty($categorias)) {
-    $sqlCat = "INSERT INTO categoria_produtos_e_produtos 
-               (categoria_produtos_idcategoria_produtos, produtos_idprodutos)
-               VALUES (:cat_id, :prod_id)";
-    $stmtCat = $pdo->prepare($sqlCat);
-    foreach ($categorias as $catId) {
-        $stmtCat->execute([
-            ":cat_id" => (int)$catId,
-            ":prod_id" => $idProduto
-        ]);
-    }
-}
+            $sqlCat = "INSERT INTO categoria_produtos_e_produtos 
+                       (categoria_produtos_idcategoria_produtos, produtos_idprodutos)
+                       VALUES (:cat_id, :prod_id)";
+            $stmtCat = $pdo->prepare($sqlCat);
+            foreach ($categorias as $catId) {
+                $stmtCat->execute([
+                    ":cat_id" => (int)$catId,
+                    ":prod_id" => $idProduto
+                ]);
+            }
+        }
 
         // Inserir imagens se existirem
         if ($img1 || $img2 || $img3) {
             $sqlImg = "INSERT INTO imagens_produtos (foto) VALUES (:foto)";
             $stmtImg = $pdo->prepare($sqlImg);
             $idsImg = [];
+
             foreach ([$img1, $img2, $img3] as $img) {
                 if ($img) {
                     $stmtImg->bindValue(":foto", $img, PDO::PARAM_LOB);
@@ -135,11 +199,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
 
-            // Vincular imagens ao produto e marca
+            // Vincular imagens ao produto e marca (tabela existente)
             $sqlVinc = "INSERT INTO imagens_produtos_e_produtos
-                        (produtos_idProdutos, imagens_produtos_idImagem_produtos, marcas_idMarcas)
+                        (produtos_idprodutos, imagens_produtos_idimagem_produtos, marcas_idmarcas)
                         VALUES (:idprod, :idimg, :idmarca)";
             $stmtVinc = $pdo->prepare($sqlVinc);
+
             foreach ($idsImg as $idImg) {
                 $stmtVinc->execute([
                     ":idprod" => $idProduto,
@@ -150,10 +215,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $pdo->commit();
-        redirectWith("../paginas_logista/cadastro_produtos_logista.html", ["sucesso" => "Produto cadastrado e vinculado com sucesso!"]);
+        redirectWith("../paginas_logista/cadastro_produtos_logista.html", [
+            "sucesso" => "Produto cadastrado e vinculado com sucesso!"
+        ]);
 
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
-        redirectWith("../paginas_logista/cadastro_produtos_logista.html", ["erro" => "Erro no banco: " . $e->getMessage()]);
+        redirectWith("../paginas_logista/cadastro_produtos_logista.html", [
+            "erro" => "Erro no banco: " . $e->getMessage()
+        ]);
     }
 }
+
+// ---------------- Fallback (nenhum método compatível) ----------------
+json_err('Requisição inválida', 405);

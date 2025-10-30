@@ -315,12 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
+ listarCupons('listcupom')
 
 /* ========= INICIALIZA ========= */
 document.addEventListener('DOMContentLoaded', () => {
   listarBanners('tbBanners');
   listarcategorias("#categoriaBanner");
   listarcategorias("#categoriasPromocoes");
-  listarCupons('listcupom')
+ 
 });

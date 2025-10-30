@@ -31,3 +31,24 @@ body {
   filter: grayscale(0%);         /* volta a cor ao passar o mouse */
   transform: scale(1.1);         /* efeito de zoom */
 }
+
+.category-card img {
+    width: 70px;           /* largura fixa */
+    height: 70px;          /* altura fixa */
+    object-fit: cover;      /* corta a imagem sem distorcer */
+    border-radius: 10px;    /* opcional, cantos arredondados */
+    display: block;
+    margin: 0 auto 10px;    /* centraliza e adiciona espaço inferior */
+  }
+
+  .category-card h6 {
+    text-transform: capitalize;
+  }
+
+  .category-card {
+    transition: transform 0.2s ease;
+  }
+
+  .category-card:hover {
+    transform: translateY(-5px);
+  }

@@ -14,182 +14,81 @@
 <body>
 
 <body class="">
+  <!-- HEADER (exemplo simples; mantenha o seu se preferir) -->
+  <header class="header d-flex align-items-center justify-content-between p-3 border-bottom">
+    <div class="logo d-flex align-items-center gap-2">
+      <img src="IMG/logoPetAmigo.png" alt="Logo PetAmigo" height="40" />
+      <strong>PetAmigo</strong>
+    </div>
+    <div class="search-box flex-grow-1 mx-3">
+      <input class="form-control" type="search" placeholder="Buscar..." />
+    </div>
+    <div class="icons d-flex align-items-center gap-3">
+      <img src="IMG/iconechat.png" alt="Chat" height="28" />
+      <img src="IMG/iconecarrinho.png" alt="Carrinho" height="28" />
+      <img src="IMG/iconeperfil.png" alt="Perfil" height="28" />
+    </div>
+  </header>
+
 
   <div class="container-fluid p-0">
 
-    <!-- Inicio - Banner Principal ------------------------ -->
-    <div id="bannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
-      <div class="carousel-inner">
+    <div id="carouselBanners" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      <div class="carousel-indicators" id="banners-indicators"></div>
+      <div class="carousel-inner" id="banners-home">
+        <!-- Itens serão inseridos via JS -->
         <div class="carousel-item active">
-          <img src="../IMG/BANNER DE TESTE.png" class="d-block w-100" alt="Promoção 1">
-        </div>
-        <div class="carousel-item">
-          <img src="../IMG/BANNER DE TESTE 2.png" class="d-block w-100" alt="Promoção 2">
-        </div>
-        <div class="carousel-item">
-          <img src="../IMG/BANNER DE TESTE 3.png" class="d-block w-100" alt="Promoção 3">
+          <div class="p-3 text-muted">Carregando banners…</div>
         </div>
       </div>
-      <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
+
+      <button class="carousel-control-prev" type="button"
+              data-bs-target="#carouselBanners" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
       </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
+
+      <button class="carousel-control-next" type="button"
+              data-bs-target="#carouselBanners" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Próximo</span>
       </button>
     </div>
-    <!-- Fim - Banner Principal -------------------------- -->
 
-    <!-- Inicio - Categorias ----------------------------- -->
-    <div class="container mb-5">
-      <h4 class="mb-3">Categorias</h4>
-      <div class="row text-center g-3">
-        <div class="col-6 col-md-3">
-          <div class="card shadow-sm p-3 category-card">
-            <img src="https://via.placeholder.com/100" class=" d-block mb-2" alt="Categoria">
-            <h6>materiais</h6>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-  <div class="card shadow-sm p-3 category-card d-flex flex-column align-items-center">
-    <img src="../IMG/MAQUINA ELETRICA.jpg" class="c-img mb-2" alt="Categoria">
-    <h6>equipamentos</h6>
-  </div>
-</div>
-        <div class="col-6 col-md-3">
-          <div class="card shadow-sm p-3 category-card">
-            <img src="https://via.placeholder.com/100" class=" d-block mb-2" alt="Categoria">
-            <h6>revestimentos</h6>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card shadow-sm p-3 category-card">
-            <img src="https://via.placeholder.com/100" class=" d-block mb-2" alt="Categoria">
-            <h6>casa</h6>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Fim - Categorias ------------------------------- -->
-
-    <!-- Inicio - Produtos ------------------------------ -->
-    <div class="container mb-5">
-      <h4 class="mb-3">Produtos</h4>
-      <div class="row g-4">
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Produto">
-            <div class="card-body text-center">
-              <p class="card-text">Produto 1</p>
-              <h5 class="text-primary">R$ 199,90</h5>
-              <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-success">Carrinho</button>
-                <button class="btn btn-sm btn-outline-primary">Mais Info</button>
-              </div>
-            </div>
-          </div>
+    <!-- ====== FILTRO E LISTAGEM DE PRODUTOS POR CATEGORIA ====== -->
+      <!-- ====== CATEGORIAS (chips) + PRODUTOS ====== -->
+      <section class="container py-4">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="h5 mb-0">Categorias</h2>
+          <label for="filtro-categoria"
+            class="visually-hidden">Categoria</label>
         </div>
 
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Produto">
-            <div class="card-body text-center">
-              <p class="card-text">Produto 1</p>
-              <h5 class="text-primary">R$ 199,90</h5>
-              <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-success">Carrinho</button>
-                <button class="btn btn-sm btn-outline-primary">Mais Info</button>
-              </div>
-            </div>
-          </div>
+        <!-- Chips horizontais -->
+        <div id="cats-chips" class="d-flex gap-2 overflow-auto pb-2">
+          <button ... data-cat="">Todas as categorias</button>
         </div>
 
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Produto">
-            <div class="card-body text-center">
-              <p class="card-text">Produto 1</p>
-              <h5 class="text-primary">R$ 199,90</h5>
-              <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-success">Carrinho</button>
-                <button class="btn btn-sm btn-outline-primary">Mais Info</button>
-              </div>
-            </div>
-          </div>
+        <!-- Select oculto (fallback/acessibilidade) -->
+        <select id="filtro-categoria" class="form-select d-none"
+          aria-hidden="true">
+          <option value>Todas as categorias</option>
+        </select>
+
+        <hr class="my-4" />
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h2 class="h5 mb-0">Produtos</h2>
         </div>
 
-
-
-       
-
-
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Produto">
-            <div class="card-body text-center">
-              <p class="card-text">Produto 2</p>
-              <h5 class="text-primary">R$ 89,90</h5>
-              <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-sm btn-success">Carrinho</button>
-                <button class="btn btn-sm btn-outline-primary">Mais Info</button>
-              </div>
-            </div>
-          </div>
+        <div id="produtos-area">
+          <div id="produtos-status" class="text-muted">Carregando
+            produtos…</div>
+          <div id="produtos-grid"
+            class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-3"></div>
         </div>
-
-        <!-- Repita para mais produtos -->
-      </div>
-    </div>
-    <!-- Fim - Produtos ------------------------------- -->
-
-    <!-- Inicio - Promoções do Mês --------------------- -->
-    <div class="container mb-5">
-      <h4 class="mb-3 text-danger">Promoções do Mês</h4>
-      <div class="row g-4">
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 border-danger shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Promoção">
-            <div class="card-body text-center">
-              <p class="card-text">Produto em Promoção</p>
-              <h5 class="text-danger">R$ 59,90 <small class="text-muted"><s>R$ 79,90</s></small></h5>
-              <button class="btn btn-sm btn-danger">Comprar Agora</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 border-danger shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Promoção">
-            <div class="card-body text-center">
-              <p class="card-text">Produto em Promoção</p>
-              <h5 class="text-danger">R$ 59,90 <small class="text-muted"><s>R$ 79,90</s></small></h5>
-              <button class="btn btn-sm btn-danger">Comprar Agora</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 border-danger shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Promoção">
-            <div class="card-body text-center">
-              <p class="card-text">Produto em Promoção</p>
-              <h5 class="text-danger">R$ 59,90 <small class="text-muted"><s>R$ 79,90</s></small></h5>
-              <button class="btn btn-sm btn-danger">Comprar Agora</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100 border-danger shadow-sm">
-            <img src="../IMG/MAQUINA ELETRICA.jpg" class="card-img-top" alt="Promoção">
-            <div class="card-body text-center">
-              <p class="card-text">Produto em Promoção</p>
-              <h5 class="text-danger">R$ 59,90 <small class="text-muted"><s>R$ 79,90</s></small></h5>
-              <button class="btn btn-sm btn-danger">Comprar Agora</button>
-            </div>
-          </div>
-        </div>
-        <!-- Repita para mais promoções -->
-      </div>
-    </div>
-    <!-- Fim - Promoções do Mês ------------------------ -->
-
+      </section>
+   
      <!-- Início - Área de Marcas ---------------------------- -->
 <div class="container my-5">
   <h4 class="text-center mb-4">Nossas Marcas Parceiras</h4>
@@ -213,8 +112,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
+  <script src="../JS/home_cliente.js"></script>
+ <script src="../JS/banners.js"></script>
 </body>
 
 </html>
