@@ -38,7 +38,7 @@ try {
             $_SESSION['user_type'] = 'cliente';
             $_SESSION['user_id']   = (int)$cli['idCliente'];
             $_SESSION['nome']      = $cli['nome'];
-            echo json_encode(['ok' => true, 'redirect' => '../paginas_cliente/telahome.html']);
+            echo json_encode(['ok' => true, 'redirect' => '../index.html']);
             exit;
         } else {
             echo json_encode(['ok' => false, 'msg' => 'Senha incorreta.']);

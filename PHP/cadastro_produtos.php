@@ -29,57 +29,67 @@ function json_ok($data = []) {
 
 // ===================== LISTAR POR CATEGORIA ===================== //
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['listar_por_categoria'])) {
-    $catId = (int)($_GET['idCategoria'] ?? $_GET['idcategoria'] ?? $_GET['categoria_id'] ?? 0);
-    if ($catId <= 0) json_err('idCategoria inválido');
+  // aceita idCategoria, idcategoria ou categoria_id
+  $catId = (int)($_GET['idCategoria'] ?? $_GET['idcategoria'] ?? $_GET['categoria_id'] ?? 0);
+  if ($catId <= 0) json_err('idCategoria inválido');
 
-    try {
-        $sql = "SELECT
-                  p.idProdutos, p.nome, p.descricao, p.quantidade, p.preco, p.preco_promocional,
-                  m.nome AS marca,
-                  c.nome AS categoria,
-                  MIN(i.idImagem_produtos) AS id_img,
-                  (SELECT i2.foto FROM Imagem_produtos i2
-                     JOIN imagens_produtos_e_produtos pi2 ON pi2.imagens_produtos_idimagem_produtos=i2.idImagem_produtos
-                    WHERE pi2.produtos_idprodutos=p.idProdutos
-                    ORDER BY i2.idImagem_produtos ASC LIMIT 1) AS imagem,
-                  (SELECT i2.texto_alternativo FROM Imagem_produtos i2
-                     JOIN imagens_produtos_e_produtos pi2 ON pi2.imagens_produtos_idimagem_produtos=i2.idImagem_produtos
-                    WHERE pi2.produtos_idprodutos=p.idProdutos
-                    ORDER BY i2.idImagem_produtos ASC LIMIT 1) AS texto_alternativo
-                FROM Produtos p
-                LEFT JOIN Marcas m ON m.idMarcas = p.Marcas_idMarcas
-                INNER JOIN Produtos_e_Categorias_produtos pc ON pc.Produtos_idProdutos = p.idProdutos
-                INNER JOIN categorias_produtos c ON c.idCategoriaProduto = pc.Categorias_produtos_id
-                LEFT JOIN imagens_produtos_e_produtos pi ON pi.produtos_idprodutos = p.idProdutos
-                LEFT JOIN Imagem_produtos i ON i.idImagem_produtos = pi.imagens_produtos_idimagem_produtos
-                WHERE pc.Categorias_produtos_id = :catId
-                GROUP BY p.idProdutos
-                ORDER BY p.idProdutos DESC";
+  try {
+    $sql = "SELECT
+              p.idProdutos,
+              p.nome,
+              p.descricao,
+              p.quantidade,
+              p.preco,
+              p.preco_promocional,
+              m.nome AS marca,
+              c.nome AS categoria,
+              MIN(i.idImagem_produtos) AS id_img,
+              (SELECT i2.foto
+                 FROM imagens_produtos i2
+                 JOIN imagens_produtos_e_produtos ip2 ON ip2.imagens_produtos_idimagem_produtos = i2.idImagem_produtos
+                WHERE ip2.produtos_idprodutos = p.idProdutos
+                ORDER BY i2.idImagem_produtos ASC
+                LIMIT 1) AS imagem,
+              (SELECT i2.descricao
+                 FROM imagens_produtos i2
+                 JOIN imagens_produtos_e_produtos ip2 ON ip2.imagens_produtos_idimagem_produtos = i2.idImagem_produtos
+                WHERE ip2.produtos_idprodutos = p.idProdutos
+                ORDER BY i2.idImagem_produtos ASC
+                LIMIT 1) AS texto_alternativo
+            FROM produtos p
+            LEFT JOIN marcas m ON m.idMarcas = p.marcas_idmarcas
+            INNER JOIN categoria_produtos_e_produtos cp ON cp.produtos_idprodutos = p.idProdutos
+            INNER JOIN categoria_produtos c ON c.idCategoria_produtos = cp.categoria_produtos_idcategoria_produtos
+            LEFT JOIN imagens_produtos_e_produtos ip ON ip.produtos_idprodutos = p.idProdutos
+            LEFT JOIN imagens_produtos i ON i.idImagem_produtos = ip.imagens_produtos_idimagem_produtos
+            WHERE cp.categoria_produtos_idcategoria_produtos = :catId
+            GROUP BY p.idProdutos
+            ORDER BY p.idProdutos DESC";
 
-        $st = $pdo->prepare($sql);
-        $st->bindValue(':catId', $catId, PDO::PARAM_INT);
-        $st->execute();
-        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+    $st = $pdo->prepare($sql);
+    $st->bindValue(':catId', $catId, PDO::PARAM_INT);
+    $st->execute();
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-        $produtos = array_map(function ($r) {
-            return [
-                'idProdutos'        => (int)$r['idProdutos'],
-                'nome'              => $r['nome'],
-                'descricao'         => $r['descricao'],
-                'quantidade'        => (int)$r['quantidade'],
-                'preco'             => (float)$r['preco'],
-                'preco_promocional' => isset($r['preco_promocional']) ? (float)$r['preco_promocional'] : null,
-                'marca'             => $r['marca'] ?? null,
-                'categoria'         => $r['categoria'] ?? null,
-                'imagem'            => $r['imagem'] ? base64_encode($r['imagem']) : null,
-                'texto_alternativo' => $r['texto_alternativo'] ?? null
-            ];
-        }, $rows);
+    $produtos = array_map(function($r) {
+      return [
+        'idProdutos'        => (int)$r['idProdutos'],
+        'nome'              => $r['nome'],
+        'descricao'         => $r['descricao'],
+        'quantidade'        => (int)$r['quantidade'],
+        'preco'             => (float)$r['preco'],
+        'preco_promocional' => isset($r['preco_promocional']) ? (float)$r['preco_promocional'] : null,
+        'marca'             => $r['marca'] ?? null,
+        'categoria'         => $r['categoria'] ?? null,
+        'imagem'            => $r['imagem'] ? base64_encode($r['imagem']) : null,
+        'texto_alternativo' => $r['texto_alternativo'] ?? null
+      ];
+    }, $rows);
 
-        json_ok(['count' => count($produtos), 'produtos' => $produtos]);
-    } catch (Throwable $e) {
-        json_err('Falha ao listar produtos por categoria', 500);
-    }
+    json_ok(['count' => count($produtos), 'produtos' => $produtos]);
+  } catch (Throwable $e) {
+    json_err('Falha ao listar produtos por categoria: ' . $e->getMessage(), 500);
+  }
 }
 
 // ---------------- FLUXO GET (LISTAGEM GERAL) ----------------
