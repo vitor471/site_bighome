@@ -44,8 +44,6 @@ function listarcategorias(nomeid) {
 
 
 
-
-
 function listarCupons(tbcupom) {
   document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById(tbcupom);
@@ -92,12 +90,6 @@ function listarCupons(tbcupom) {
       });
   });
 }
-
-
-
-
-
-
 
 
 
@@ -322,5 +314,5 @@ document.addEventListener('DOMContentLoaded', () => {
   listarBanners('tbBanners');
   listarcategorias("#categoriaBanner");
   listarcategorias("#categoriasPromocoes");
- 
+ listarCupons('listcupom')
 });
